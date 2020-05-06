@@ -91,12 +91,7 @@ class TrapezoidalCurve(MotionProfile):
         return t, p, v, a
 
     def get_data(self, precision=1000) -> np.ndarray:
-        data = []
-
-        for t in np.linspace(0, self.period, precision):
-            data.append(self.get_data_point(t))
-
-        return np.array(data)
+        return np.array([self.get_data_point(t) for t in np.linspace(0, self.period, precision)])
 
 
 if __name__ == '__main__':
