@@ -17,7 +17,7 @@ class NthOrderSCurve:
 
 
 class TrapezoidalCurve(MotionProfile):
-    def find_accelerating_constants(self, v_initial: float, v_final: float, acceleration_max: float) \
+    def find_accelerating_constants(self, v_initial: float, v_final: float) \
             -> Dict[str, float]:
         delta_v = v_final - v_initial
 
@@ -25,37 +25,42 @@ class TrapezoidalCurve(MotionProfile):
             return {"time": 0, "distance": 0, "velocity": v_initial, "acceleration": 0}
 
         accel_sign = np.sign(delta_v)
-        a = accel_sign * acceleration_max
+        a = accel_sign * self.acceleration_max
         t = delta_v / a
         d = (v_final ** 2 - v_initial ** 2) / (2 * a)
 
         return {"time": t, "distance": d, "velocity": v_initial, "acceleration": a}
 
-    def find_flat_constants(self, s_initial, s_final, d_a, d_b, v_max) -> Dict[str, float]:
-        delta_d = s_final - s_initial - d_a - d_b
-        t = delta_d / v_max
+    def find_flat_constants(self, d_a, d_b) -> Dict[str, float]:
+        delta_d = self.delta_s - d_a - d_b
+        t = delta_d / self.v_max
 
-        return {"time": t, "distance": delta_d, "velocity": v_max, "acceleration": 0}
+        return {"time": t, "distance": delta_d, "velocity": self.v_max, "acceleration": 0}
 
     def __init__(self, s_initial, s_final, v_initial, v_final, v_max, acceleration_max) -> None:
         super().__init__()
 
         self.s_initial = s_initial
+        self.s_final = s_final
+        self.v_initial = v_initial
+        self.v_final = v_final
+        self.v_max = v_max
+        self.acceleration_max = acceleration_max
+        self.delta_s = s_final - s_initial
 
-        accel = self.find_accelerating_constants(v_initial, v_max, acceleration_max)
-        deccel = self.find_accelerating_constants(v_max, v_final, acceleration_max)
+        accel = self.find_accelerating_constants(v_initial, v_max)
+        deccel = self.find_accelerating_constants(v_max, v_final)
 
         distance_accelerating = accel['distance']
         distance_decelerating = deccel['distance']
 
-        delta_s = s_final - s_initial
-
-        if delta_s == distance_accelerating + distance_decelerating:
+        if self.delta_s == distance_accelerating + distance_decelerating:
             self.motion = (accel, deccel)
-        elif abs(distance_decelerating + distance_accelerating) > abs(delta_s):
-            pass
+        elif abs(distance_decelerating + distance_accelerating) > abs(self.delta_s):
+
+            self.motion = (accel, deccel)
         else:
-            flat = self.find_flat_constants(s_initial, s_final, distance_accelerating, distance_decelerating, v_max)
+            flat = self.find_flat_constants(distance_accelerating, distance_decelerating)
             self.motion = (accel, flat, deccel)
 
         self.period = sum(m['time'] for m in self.motion)
