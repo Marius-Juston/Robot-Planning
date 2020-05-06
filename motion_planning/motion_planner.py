@@ -69,7 +69,7 @@ class TrapezoidalCurve(MotionProfile):
         distance_decelerating = deccel['distance']
 
         if self.delta_s == distance_accelerating + distance_decelerating:
-            self.motion = (accel, deccel)
+            self.motion = [accel, deccel]
         elif abs(distance_decelerating + distance_accelerating) > abs(self.delta_s):
             v_f = self.get_too_close_final_velocity()
             print(v_f)
@@ -77,10 +77,14 @@ class TrapezoidalCurve(MotionProfile):
             accel = self.find_accelerating_constants(v_initial, v_f)
             deccel = self.find_accelerating_constants(v_f, v_final)
 
-            self.motion = (accel, deccel)
+            self.motion = [accel, deccel]
         else:
             flat = self.find_flat_constants(distance_accelerating, distance_decelerating)
-            self.motion = (accel, flat, deccel)
+            self.motion = [accel, flat, deccel]
+
+        for i in range(len(self.motion) - 1, -1, -1):
+            if self.motion[i]['time'] <= 0:
+                self.motion.remove(self.motion[i])
 
         self.period = sum(m['time'] for m in self.motion)
 
@@ -119,7 +123,7 @@ class TrapezoidalCurve(MotionProfile):
 
 
 if __name__ == '__main__':
-    t = TrapezoidalCurve(0, 10, 0, 0, 2, 1)
+    t = TrapezoidalCurve(0, .5, 1, 0, 2, 1)
 
     d = t.get_data()
 
