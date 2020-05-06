@@ -108,10 +108,12 @@ class TrapezoidalCurve(MotionProfile):
 
         self.period = sum(m['time'] for m in self.motion)
 
-    def position(self, s, v, a, t):
+    @staticmethod
+    def position(s, v, a, t):
         return s + v * t + t ** 2 / 2 * a
 
-    def velocity(self, v, a, t):
+    @staticmethod
+    def velocity(v, a, t):
         return v + a * t
 
     def get_data_point(self, t) -> Tuple[float, float, float, float]:
