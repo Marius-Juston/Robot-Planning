@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Tuple, Optional, Dict
 
+import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
 
@@ -97,8 +98,6 @@ class TrapezoidalCurve(MotionProfile):
 
         return np.array(data)
 
-
-import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
     t = TrapezoidalCurve(0, 10, 0, 0, 2, 1)
