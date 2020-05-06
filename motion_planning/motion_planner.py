@@ -85,7 +85,7 @@ class TrapezoidalCurve(MotionProfile):
 
             while np.isnan(accel['distance']) or \
                     np.isnan(deccel['distance']) or \
-                    abs(accel['distance'] + accel['distance'] - self.delta_s) > TrapezoidalCurve.DOUBLE_TOLERANCE:
+                    abs(accel['distance'] + deccel['distance'] - self.delta_s) > TrapezoidalCurve.DOUBLE_TOLERANCE:
                 v_middle = self.get_too_close_final_velocity(v_sign[i], inside[j])
                 accel = self.find_accelerating_constants(self.v_initial, v_middle)
                 deccel = self.find_accelerating_constants(v_middle, self.v_final)
