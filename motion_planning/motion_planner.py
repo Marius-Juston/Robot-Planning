@@ -60,6 +60,11 @@ class TrapezoidalCurve(MotionProfile):
         if self.delta_s == distance_accelerating + distance_decelerating:
             self.motion = (accel, deccel)
         elif abs(distance_decelerating + distance_accelerating) > abs(self.delta_s):
+            v_f = self.get_too_close_final_velocity()
+            print(v_f)
+
+            accel = self.find_accelerating_constants(v_initial, v_f)
+            deccel = self.find_accelerating_constants(v_f, v_final)
 
             self.motion = (accel, deccel)
         else:
