@@ -60,8 +60,7 @@ class TrapezoidalCurve(MotionProfile):
 
         self.s_initial = s_initial
         self.s_final = s_final
-        self.v_initial = np.clip(v_initial, -v_max, v_max)
-        self.v_final = np.clip(v_final, -v_max, v_max)
+        self.v_initial, self.v_final = np.clip((v_initial, v_final), -v_max, v_max)
         self.acceleration_max = acceleration_max
         self.delta_s = s_final - s_initial
         self.v_max = v_max * np.sign(self.delta_s)
