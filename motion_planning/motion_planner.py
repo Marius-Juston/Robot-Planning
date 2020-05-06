@@ -39,6 +39,8 @@ class TrapezoidalCurve(MotionProfile):
 
     def get_too_close_final_velocity(self):
         return np.sqrt(2 * self.acceleration_max * self.delta_s + self.v_final ** 2 + self.v_initial ** 2) / np.sqrt(2)
+    def clip(self, min_x, max_x, x):
+        return min(max_x, max(min_x, x))
 
     def __init__(self, s_initial, s_final, v_initial, v_final, v_max, acceleration_max) -> None:
         """
@@ -56,8 +58,8 @@ class TrapezoidalCurve(MotionProfile):
 
         self.s_initial = s_initial
         self.s_final = s_final
-        self.v_initial = v_initial
-        self.v_final = v_final
+        self.v_initial = self.clip(-v_max, v_max, v_initial)
+        self.v_final = self.clip(-v_max, v_max, v_final)
         self.acceleration_max = acceleration_max
         self.delta_s = s_final - s_initial
         self.v_max = v_max * np.sign(self.delta_s)
