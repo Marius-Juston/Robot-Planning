@@ -33,7 +33,7 @@ class TrapezoidalCurve:
 
         return t_c, delta, 0, motion
 
-    def __init__(self, s_initial, v_initial, s_final, v_final, v_max, acceleration_max) -> None:
+    def __init__(self, s_initial, s_final, v_initial, v_final, v_max, acceleration_max) -> None:
         super().__init__()
 
         self.s_initial = s_initial
@@ -50,7 +50,7 @@ class TrapezoidalCurve:
             self.times = [t_a, t_b]
             self.motion = [m_a, m_b]
 
-        if d_a + d_b > delta_s:
+        if abs(d_a + d_b) > abs(delta_s):
             self.times = []
         else:
             t_c, d_c, a_flat, m_c = self.find_flat(s_initial, s_final, d_a, d_b, v_max)
@@ -76,7 +76,7 @@ class TrapezoidalCurve:
         stop = False
 
         for t in time:
-            while (t - t_i) > self.times[index]:
+            while (t - t_i) >= self.times[index]:
                 t_i += self.times[index]
                 index += 1
 
@@ -106,13 +106,10 @@ class TrapezoidalCurve:
         acceleration.grid()
         acceleration.minorticks_on()
 
-        # a:Axes= None
-        # a.min
-
         plt.tight_layout()
         plt.show()
 
 
 if __name__ == '__main__':
-    t = TrapezoidalCurve(5, 1, 10, -2, 2, 3)
+    t = TrapezoidalCurve(5, -10, -1, -3, -1.5, 5)
     t.draw_motion(500)
