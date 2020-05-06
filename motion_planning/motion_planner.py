@@ -47,12 +47,12 @@ class TrapezoidalCurve(MotionProfile):
         self.s_final = s_final
         self.v_initial = v_initial
         self.v_final = v_final
-        self.v_max = v_max
         self.acceleration_max = acceleration_max
         self.delta_s = s_final - s_initial
+        self.v_max = v_max * np.sign(self.delta_s)
 
-        accel = self.find_accelerating_constants(v_initial, v_max)
-        deccel = self.find_accelerating_constants(v_max, v_final)
+        accel = self.find_accelerating_constants(v_initial, self.v_max)
+        deccel = self.find_accelerating_constants(self.v_max, v_final)
 
         distance_accelerating = accel['distance']
         distance_decelerating = deccel['distance']
