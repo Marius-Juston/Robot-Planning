@@ -74,8 +74,8 @@ class TrapezoidalCurve(MotionProfile):
         s = self.s_initial
 
         while t > t_i:
-            i += 1
             s += self.motion[i]['distance']
+            i += 1
             t_i += self.motion[i]['time']
 
         t_i -= self.motion[i]['time']
