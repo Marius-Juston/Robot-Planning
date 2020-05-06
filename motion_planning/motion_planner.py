@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Tuple, Optional, Dict
+from typing import Tuple, Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,6 +17,8 @@ class NthOrderSCurve:
 
 
 class TrapezoidalCurve(MotionProfile):
+    DOUBLE_TOLERANCE = 0.000000001
+
     def find_accelerating_constants(self, v_initial: float, v_final: float) \
             -> Dict[str, float]:
         delta_v = v_final - v_initial
@@ -39,8 +41,7 @@ class TrapezoidalCurve(MotionProfile):
 
     def get_too_close_final_velocity(self, solution=1):
         return solution * np.sqrt(
-            solution * 2 * self.acceleration_max * self.delta_s + self.v_final ** 2 + self.v_initial ** 2) / np.sqrt(
-            2)
+            solution * 2 * self.acceleration_max * self.delta_s + self.v_final ** 2 + self.v_initial ** 2) / np.sqrt(2)
 
     def clip(self, min_x, max_x, x):
         return min(max_x, max(min_x, x))
@@ -82,7 +83,9 @@ class TrapezoidalCurve(MotionProfile):
             accel = self.find_accelerating_constants(self.v_initial, v_middle)
             deccel = self.find_accelerating_constants(v_middle, self.v_final)
 
-            if accel['distance'] + accel['distance'] != self.delta_s:
+            print(accel['distance'] + deccel['distance'])
+
+            if abs(accel['distance'] + accel['distance']) - abs(self.delta_s) > TrapezoidalCurve.DOUBLE_TOLERANCE:
                 print("Alternate solution")
                 v_middle = self.get_too_close_final_velocity(-1)
                 accel = self.find_accelerating_constants(self.v_initial, v_middle)
@@ -107,9 +110,9 @@ class TrapezoidalCurve(MotionProfile):
     def velocity(self, v, a, t):
         return v + a * t
 
-    def get_data_point(self, t) -> Optional[Tuple[float, float, float, float]]:
-        if t > self.period:
-            return None
+    def get_data_point(self, t) -> Tuple[float, float, float, float]:
+        if t > self.period or len(self.motion) == 0:
+            return t, self.s_final, self.v_final, self.acceleration_max
 
         i = 0
         t_i = self.motion[i]['time']
@@ -132,16 +135,19 @@ class TrapezoidalCurve(MotionProfile):
         return t, p, v, a
 
     def get_data(self, precision=1000) -> np.ndarray:
+        if self.period == 0:
+            return np.empty((1, 4))
+
         return np.array([self.get_data_point(t) for t in np.linspace(0, self.period, precision)])
 
 
 if __name__ == '__main__':
-    mid = -.25
-    t = TrapezoidalCurve(0, mid, 1, 3, 3, 1)
+    mid = 0.2
+    t = TrapezoidalCurve(0, mid, 0, 0, 3, 1)
     d = t.get_data()
-    # t = TrapezoidalCurve(mid, 5, 0, 0, 2, 1)
-    # t1 = t.get_data()
-    # d = np.concatenate((d, t1 + np.array([d[-1, 0], 0, 0, 0])))
+    t = TrapezoidalCurve(mid, 5, 0, 0, 2, 1)
+    t1 = t.get_data()
+    d = np.concatenate((d, t1 + np.array([d[-1, 0], 0, 0, 0])))
 
     fig: Figure = plt.gcf()
     p, v, a = fig.subplots(3, 1)
