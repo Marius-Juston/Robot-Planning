@@ -39,12 +39,10 @@ class TrapezoidalCurve(MotionProfile):
 
         return {"time": t, "distance": delta_d, "velocity": self.v_max, "acceleration": 0}
 
-    def get_too_close_final_velocity(self, solution=1):
-        return solution * np.sqrt(
-            solution * 2 * self.acceleration_max * self.delta_s + self.v_final ** 2 + self.v_initial ** 2) / np.sqrt(2)
-
-    def clip(self, min_x, max_x, x):
-        return min(max_x, max(min_x, x))
+    def get_too_close_final_velocity(self, v_sign=1, inside=1):
+        return v_sign * np.sqrt(
+            abs(inside * 2 * self.acceleration_max * self.delta_s + self.v_final ** 2 + self.v_initial ** 2)) / np.sqrt(
+            2)
 
     def __init__(self, s_initial, s_final, v_initial, v_final, v_max, acceleration_max) -> None:
         """
@@ -77,21 +75,27 @@ class TrapezoidalCurve(MotionProfile):
         if self.delta_s == distance_accelerating + distance_decelerating:
             self.motion = [accel, deccel]
         elif abs(distance_decelerating + distance_accelerating) > abs(self.delta_s):
-            v_middle = self.get_too_close_final_velocity()
-            print(v_middle)
+            accel = {'distance': np.nan}
+            deccel = {'distance': np.nan}
 
-            accel = self.find_accelerating_constants(self.v_initial, v_middle)
-            deccel = self.find_accelerating_constants(v_middle, self.v_final)
+            i = 0
+            j = 0
 
-            print(accel['distance'] + deccel['distance'])
+            v_sign = [1, -1]
+            inside = [1, -1]
 
-            if abs(accel['distance'] + accel['distance']) - abs(self.delta_s) > TrapezoidalCurve.DOUBLE_TOLERANCE:
-                print("Alternate solution")
-                v_middle = self.get_too_close_final_velocity(-1)
+            while np.isnan(accel['distance']) or \
+                    np.isnan(deccel['distance']) or \
+                    abs(accel['distance'] + accel['distance'] - self.delta_s) > TrapezoidalCurve.DOUBLE_TOLERANCE:
+                v_middle = self.get_too_close_final_velocity(v_sign[i], inside[j])
                 accel = self.find_accelerating_constants(self.v_initial, v_middle)
                 deccel = self.find_accelerating_constants(v_middle, self.v_final)
 
-            print(v_middle)
+                print(v_middle, accel['distance'] + deccel['distance'], i, j)
+
+                i += 1
+                j += i // 2
+                i %= 2
 
             self.motion = [accel, deccel]
         else:
