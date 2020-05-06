@@ -37,8 +37,11 @@ class TrapezoidalCurve(MotionProfile):
 
         return {"time": t, "distance": delta_d, "velocity": self.v_max, "acceleration": 0}
 
-    def get_too_close_final_velocity(self):
-        return np.sqrt(2 * self.acceleration_max * self.delta_s + self.v_final ** 2 + self.v_initial ** 2) / np.sqrt(2)
+    def get_too_close_final_velocity(self, solution=1):
+        return solution * np.sqrt(
+            solution * 2 * self.acceleration_max * self.delta_s + self.v_final ** 2 + self.v_initial ** 2) / np.sqrt(
+            2)
+
     def clip(self, min_x, max_x, x):
         return min(max_x, max(min_x, x))
 
@@ -76,8 +79,13 @@ class TrapezoidalCurve(MotionProfile):
             v_f = self.get_too_close_final_velocity()
             print(v_f)
 
-            accel = self.find_accelerating_constants(v_initial, v_f)
-            deccel = self.find_accelerating_constants(v_f, v_final)
+            accel = self.find_accelerating_constants(self.v_initial, v_f)
+            deccel = self.find_accelerating_constants(v_f, self.v_final)
+
+            if accel['distance'] + accel['distance'] != self.delta_s:
+                v_f = self.get_too_close_final_velocity(-1)
+                accel = self.find_accelerating_constants(self.v_initial, v_f)
+                deccel = self.find_accelerating_constants(v_f, self.v_final)
 
             self.motion = [accel, deccel]
         else:
@@ -125,9 +133,12 @@ class TrapezoidalCurve(MotionProfile):
 
 
 if __name__ == '__main__':
-    t = TrapezoidalCurve(0, .5, 1, 0, 2, 1)
-
+    mid = -.25
+    t = TrapezoidalCurve(0, mid, 1, 3, 3, 1)
     d = t.get_data()
+    # t = TrapezoidalCurve(mid, 5, 0, 0, 2, 1)
+    # t1 = t.get_data()
+    # d = np.concatenate((d, t1 + np.array([d[-1, 0], 0, 0, 0])))
 
     fig: Figure = plt.gcf()
     p, v, a = fig.subplots(3, 1)
