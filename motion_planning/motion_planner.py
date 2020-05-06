@@ -41,6 +41,17 @@ class TrapezoidalCurve(MotionProfile):
         return np.sqrt(2 * self.acceleration_max * self.delta_s + self.v_final ** 2 + self.v_initial ** 2) / np.sqrt(2)
 
     def __init__(self, s_initial, s_final, v_initial, v_final, v_max, acceleration_max) -> None:
+        """
+        :parameter s_initial: the initial position of the system
+        :parameter s_final: the final position of the system
+        :parameter v_initial: the initial velocity of the system
+        :parameter v_final: the final velocity of the system
+        :parameter v_max: the maximum velocity that the system will experience both negative or
+                                    positive. This is the cruise velocity. This value should always be positive
+
+        :parameter acceleration_max: the maximum acceleration that the system will experience both negative or
+                                    positive. This value should always be positive
+        """
         super().__init__()
 
         self.s_initial = s_initial
