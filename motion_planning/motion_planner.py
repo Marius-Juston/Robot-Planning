@@ -1,6 +1,15 @@
+from abc import ABC, abstractmethod
+from typing import Tuple
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
+
+
+class MotionProfile(ABC):
+    @abstractmethod
+    def get_data(self, t) -> Tuple[float]:
+        pass
 
 
 class NthOrderSCurve:
@@ -111,5 +120,5 @@ class TrapezoidalCurve:
 
 
 if __name__ == '__main__':
-    t = TrapezoidalCurve(5, -10, -1, -3, -1.5, 5)
+    t = TrapezoidalCurve(5, -10, -1, 0, -1.5, 1)
     t.draw_motion(500)
