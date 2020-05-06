@@ -79,7 +79,7 @@ class TrapezoidalCurve(MotionProfile):
             t_i += self.motion[i]['time']
 
         t_i -= self.motion[i]['time']
-        t2 = t- t_i
+        t2 = t - t_i
 
         v = self.motion[i]['velocity']
         a = self.motion[i]['acceleration']
