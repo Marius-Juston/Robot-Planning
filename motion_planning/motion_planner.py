@@ -100,7 +100,19 @@ if __name__ == '__main__':
     d = t.get_data()
 
     fig: Figure = plt.gcf()
-    p, v, c = fig.subplots(3, 1)
+    p, v, a = fig.subplots(3, 1)
+
+    p.grid(True)
+    p.grid(True, 'minor', linewidth=.25)
+    p.minorticks_on()
+
+    v.grid(True)
+    v.grid(True, 'minor', linewidth=.25)
+    v.minorticks_on()
+
+    a.grid(True)
+    a.grid(True, 'minor', linewidth=.25)
+    a.minorticks_on()
 
     t = d[:, 0]
     p_y = d[:, 1]
@@ -109,6 +121,7 @@ if __name__ == '__main__':
 
     p.plot(t, p_y)
     v.plot(t, v_y)
-    c.plot(t, a_y)
+    a.plot(t, a_y)
 
+    plt.tight_layout()
     plt.show()
