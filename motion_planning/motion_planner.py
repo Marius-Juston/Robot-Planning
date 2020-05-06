@@ -151,7 +151,8 @@ if __name__ == '__main__':
     mid = 0.2
     t = TrapezoidalCurve(0, mid, 0, 0, 3, 1)
     d = t.get_data()
-    t = TrapezoidalCurve(mid, 5, 0, 0, 2, 1)
+    t = TrapezoidalCurve(mid, 0, 0, 0, 2, 1)
+    t1 = t.get_data()
     t1 = t.get_data()
     d = np.concatenate((d, t1 + np.array([d[-1, 0], 0, 0, 0])))
 
