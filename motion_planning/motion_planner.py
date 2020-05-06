@@ -8,7 +8,11 @@ from matplotlib.figure import Figure
 
 class MotionProfile(ABC):
     @abstractmethod
-    def get_data(self) -> Tuple[Tuple[float, float, float, float]]:
+    def get_data(self) -> np.ndarray:
+        pass
+
+    @abstractmethod
+    def get_data_point(self, t) -> Tuple:
         pass
 
 
@@ -152,6 +156,8 @@ if __name__ == '__main__':
     d = t.get_data()
     t = TrapezoidalCurve(mid, 0, 0, 0, 2, 1)
     t1 = t.get_data()
+    d = np.concatenate((d, t1 + np.array([d[-1, 0], 0, 0, 0])))
+    t = TrapezoidalCurve(0, 1, 0, -2, 2, 1)
     t1 = t.get_data()
     d = np.concatenate((d, t1 + np.array([d[-1, 0], 0, 0, 0])))
 
