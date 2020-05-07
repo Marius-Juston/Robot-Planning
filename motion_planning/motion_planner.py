@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Tuple, Dict
+from timeit import Timer
+from typing import Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -166,43 +167,13 @@ class TrapezoidalCurve(MotionProfile):
     def velocity(v, a, t):
         return v + a * t
 
-    def get_data_point(self, t) -> Tuple[float, float, float, float]:
-        if t > self.period or len(self.motion) == 0:
-            return t, self.s_final, self.v_final, self.acceleration_max
-
-        i = 0
-        t_i = self.motion[i]['time']
-        s = self.s_initial
-
-        while t > t_i:
-            s += self.motion[i]['distance']
-            i += 1
-            t_i += self.motion[i]['time']
-
-        t_i -= self.motion[i]['time']
-        t2 = t - t_i
-
-        v = self.motion[i]['velocity']
-        a = self.motion[i]['acceleration']
-
-        p = self.position(s, v, a, t2)
-        v = self.velocity(v, a, t2)
-
-        return t, p, v, a
-
-    def get_data(self, precision=1000) -> np.ndarray:
+    def get_data_point(self, t) -> np.ndarray:
         if self.period == 0:
             return np.empty((1, 4))
 
-        if precision not in TrapezoidalCurve.times:
-            times = np.linspace(0, self.period, precision)
-            TrapezoidalCurve.times[precision] = times
-        else:
-            times = TrapezoidalCurve.times[precision]
+        return self.value(t)
 
-        return np.array([self.get_data_point(t) for t in times])
-
-    def get_data_new(self, precision=1000) -> np.ndarray:
+    def get_data(self, precision=1000) -> np.ndarray:
         if self.period == 0:
             return np.empty((1, 4))
 
@@ -215,8 +186,8 @@ class TrapezoidalCurve(MotionProfile):
         return self.value(times)
 
     def get_condition(self, x):
-        return list(np.logical_and(np.greater_equal(x, min_x), np.less_equal(x, max_x)) for (min_x, max_x) in
-                    self.conditions)
+        return list(
+            np.logical_and(np.greater_equal(x, min_x), np.less_equal(x, max_x)) for (min_x, max_x) in self.conditions)
 
 
 if __name__ == '__main__':
