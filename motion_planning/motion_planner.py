@@ -21,6 +21,8 @@ class NthOrderSCurve:
 
 
 class TrapezoidalCurve(MotionProfile):
+    times = {}
+
     DOUBLE_TOLERANCE = 0.000000001
 
     def define_pos(self, ti, position, velocity, acceleration):
@@ -33,12 +35,7 @@ class TrapezoidalCurve(MotionProfile):
 
         return pos, vel
 
-    def define_piece_wise(self, x):
-        condition = []
-        p_result = []
-        v_result = []
-        a_result = []
-
+    def define_piece_wise(self):
         t_i = self.period
         p = self.s_final
 
@@ -46,7 +43,7 @@ class TrapezoidalCurve(MotionProfile):
         for m in self.motion[::-1]:
             time = m['time']
 
-            condition.append(np.logical_and(np.greater_equal(x, t_i - time), np.less_equal(x, t_i)))
+            self.conditions.append((t_i - time, t_i))
             t_i -= time
             p -= m['distance']
             v = m['velocity']
@@ -54,17 +51,17 @@ class TrapezoidalCurve(MotionProfile):
 
             pos, vel = self.define_pos(t_i, p, v, a)
 
-            p_result.append(pos)
-            v_result.append(vel)
-            a_result.append(a)
+            self.p_result.append(pos)
+            self.v_result.append(vel)
+            self.a_result.append(a)
 
             i += 1
 
-        p_result = np.piecewise(x, condition, p_result)
-        v_result = np.piecewise(x, condition, v_result)
-        a_result = np.piecewise(x, condition, a_result)
+    def value(self, x):
+        condition = self.get_condition(x)
 
-        return np.column_stack((x, p_result, v_result, a_result))
+        return np.column_stack((x, np.piecewise(x, condition, self.p_result), np.piecewise(x, condition, self.v_result),
+                                np.piecewise(x, condition, self.a_result)))
 
     def find_accelerating_constants(self, v_initial: float, v_final: float) \
             -> Dict[str, float]:
@@ -154,6 +151,13 @@ class TrapezoidalCurve(MotionProfile):
 
         self.period = sum(m['time'] for m in self.motion)
 
+        self.conditions = []
+        self.p_result = []
+        self.v_result = []
+        self.a_result = []
+
+        self.define_piece_wise()
+
     @staticmethod
     def position(s, v, a, t):
         return s + v * t + t ** 2 / 2 * a
@@ -190,13 +194,29 @@ class TrapezoidalCurve(MotionProfile):
         if self.period == 0:
             return np.empty((1, 4))
 
-        return np.array([self.get_data_point(t) for t in np.linspace(0, self.period, precision)])
+        if precision not in TrapezoidalCurve.times:
+            times = np.linspace(0, self.period, precision)
+            TrapezoidalCurve.times[precision] = times
+        else:
+            times = TrapezoidalCurve.times[precision]
+
+        return np.array([self.get_data_point(t) for t in times])
 
     def get_data_new(self, precision=1000) -> np.ndarray:
         if self.period == 0:
             return np.empty((1, 4))
 
-        return self.define_piece_wise(np.linspace(0, self.period, precision))
+        if precision not in TrapezoidalCurve.times:
+            times = np.linspace(0, self.period, precision)
+            TrapezoidalCurve.times[precision] = times
+        else:
+            times = TrapezoidalCurve.times[precision]
+
+        return self.value(times)
+
+    def get_condition(self, x):
+        return list(np.logical_and(np.greater_equal(x, min_x), np.less_equal(x, max_x)) for (min_x, max_x) in
+                    self.conditions)
 
 
 if __name__ == '__main__':
