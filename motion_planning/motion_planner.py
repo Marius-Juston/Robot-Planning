@@ -23,6 +23,49 @@ class NthOrderSCurve:
 class TrapezoidalCurve(MotionProfile):
     DOUBLE_TOLERANCE = 0.000000001
 
+    def define_pos(self, ti, position, velocity, acceleration):
+
+        def pos(t):
+            return self.position(position, velocity, acceleration, t - ti)
+
+        def vel(t):
+            return self.velocity(velocity, acceleration, t - ti)
+
+        return pos, vel
+
+    def define_piece_wise(self, x):
+        condition = []
+        p_result = []
+        v_result = []
+        a_result = []
+
+        t_i = self.period
+        p = self.s_final
+
+        i = 0
+        for m in self.motion[::-1]:
+            time = m['time']
+
+            condition.append(np.logical_and(np.greater_equal(x, t_i - time), np.less_equal(x, t_i)))
+            t_i -= time
+            p -= m['distance']
+            v = m['velocity']
+            a = m['acceleration']
+
+            pos, vel = self.define_pos(t_i, p, v, a)
+
+            p_result.append(pos)
+            v_result.append(vel)
+            a_result.append(a)
+
+            i += 1
+
+        p_result = np.piecewise(x, condition, p_result)
+        v_result = np.piecewise(x, condition, v_result)
+        a_result = np.piecewise(x, condition, a_result)
+
+        return np.column_stack((x, p_result, v_result, a_result))
+
     def find_accelerating_constants(self, v_initial: float, v_final: float) \
             -> Dict[str, float]:
         delta_v = v_final - v_initial
@@ -94,7 +137,7 @@ class TrapezoidalCurve(MotionProfile):
                 accel = self.find_accelerating_constants(self.v_initial, v_middle)
                 deccel = self.find_accelerating_constants(v_middle, self.v_final)
 
-                print(v_middle, accel['distance'] + deccel['distance'], i, j)
+                # print(v_middle, accel['distance'] + deccel['distance'], i, j)
 
                 i += 1
                 j += i // 2
@@ -148,6 +191,12 @@ class TrapezoidalCurve(MotionProfile):
             return np.empty((1, 4))
 
         return np.array([self.get_data_point(t) for t in np.linspace(0, self.period, precision)])
+
+    def get_data_new(self, precision=1000) -> np.ndarray:
+        if self.period == 0:
+            return np.empty((1, 4))
+
+        return self.define_piece_wise(np.linspace(0, self.period, precision))
 
 
 if __name__ == '__main__':
