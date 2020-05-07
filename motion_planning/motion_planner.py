@@ -9,11 +9,11 @@ from matplotlib.figure import Figure
 
 class MotionProfile(ABC):
     @abstractmethod
-    def get_data(self) -> np.ndarray:
+    def get_data(self) -> Dict[str, np.ndarray]:
         pass
 
     @abstractmethod
-    def get_data_point(self, t) -> np.ndarray:
+    def get_data_point(self, t) -> Dict[str, np.ndarray]:
         pass
 
 
@@ -58,11 +58,21 @@ class TrapezoidalCurve(MotionProfile):
 
             i += 1
 
-    def value(self, x) -> np.ndarray:
+    def value(self, x) -> Dict[str, np.ndarray]:
         condition = self.get_condition(x)
 
-        return np.column_stack((x, np.piecewise(x, condition, self.p_result), np.piecewise(x, condition, self.v_result),
-                                np.piecewise(x, condition, self.a_result)))
+        return {"time": x,
+                "position": np.piecewise(x, condition, self.p_result),
+                "velocity": np.piecewise(x, condition, self.v_result),
+                "acceleration": np.piecewise(x, condition, self.a_result)
+                }
+
+        # a = {"time": x,
+        #         "position": np.piecewise(x, condition, self.p_result),
+        #         "velocity": np.piecewise(x, condition, self.v_result),
+        #         "acceleration": np.piecewise(x, condition, self.a_result)
+        #         }
+        # return np.fromiter(a.items(), dtype=np.ndarray, count=len(a))
 
     def find_accelerating_constants(self, v_initial: float, v_final: float) \
             -> Dict[str, float]:
@@ -167,15 +177,19 @@ class TrapezoidalCurve(MotionProfile):
     def velocity(v, a, t):
         return v + a * t
 
-    def get_data_point(self, t) -> np.ndarray:
+    EMPTY = np.empty(1)
+
+    def get_data_point(self, t) -> Dict[str, np.ndarray]:
         if self.period == 0:
-            return np.empty((1, 4))
+            return {'time': TrapezoidalCurve.EMPTY, 'position': TrapezoidalCurve.EMPTY,
+                    'velocity': TrapezoidalCurve.EMPTY, 'acceleration': TrapezoidalCurve.EMPTY}
 
         return self.value(t)
 
-    def get_data(self, precision=1000) -> np.ndarray:
+    def get_data(self, precision=1000) -> Dict[str, np.ndarray]:
         if self.period == 0:
-            return np.empty((1, 4))
+            return {'time': TrapezoidalCurve.EMPTY, 'position': TrapezoidalCurve.EMPTY,
+                    'velocity': TrapezoidalCurve.EMPTY, 'acceleration': TrapezoidalCurve.EMPTY}
 
         if precision not in TrapezoidalCurve.times:
             times = np.linspace(0, self.period, precision)
@@ -188,6 +202,13 @@ class TrapezoidalCurve(MotionProfile):
     def get_condition(self, x):
         return list(
             np.logical_and(np.greater_equal(x, min_x), np.less_equal(x, max_x)) for (min_x, max_x) in self.conditions)
+
+
+def merge(d1, d2):
+    return {'time': np.concatenate((d1['time'], d2['time'] + d1['time'][-1])),
+            'position': np.concatenate((d1['position'], d2['position'])),
+            'velocity': np.concatenate((d1['velocity'], d2['velocity'])),
+            'acceleration': np.concatenate((d1['acceleration'], d2['acceleration']))}
 
 
 if __name__ == '__main__':
@@ -216,10 +237,10 @@ if __name__ == '__main__':
     a.grid(True, 'minor', linewidth=.25)
     a.minorticks_on()
 
-    t = d[:, 0]
-    p_y = d[:, 1]
-    v_y = d[:, 2]
-    a_y = d[:, 3]
+    t = d['time']
+    p_y = d['position']
+    v_y = d['velocity']
+    a_y = d['acceleration']
 
     p.plot(t, p_y)
     v.plot(t, v_y)
