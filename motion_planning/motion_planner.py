@@ -12,7 +12,7 @@ class MotionProfile(ABC):
         pass
 
     @abstractmethod
-    def get_data_point(self, t) -> Tuple:
+    def get_data_point(self, t) -> np.ndarray:
         pass
 
 
@@ -57,7 +57,7 @@ class TrapezoidalCurve(MotionProfile):
 
             i += 1
 
-    def value(self, x):
+    def value(self, x) -> np.ndarray:
         condition = self.get_condition(x)
 
         return np.column_stack((x, np.piecewise(x, condition, self.p_result), np.piecewise(x, condition, self.v_result),
