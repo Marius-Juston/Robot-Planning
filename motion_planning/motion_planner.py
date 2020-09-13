@@ -22,6 +22,42 @@ class NthOrderSCurve:
 
 
 class SCurve(MotionProfile):
+    def __init__(self, s_initial, s_final, v_initial, v_final, v_max, a_initial, a_final, acceleration_max,
+                 jerk_max) -> None:
+        """
+        :parameter s_initial: the initial position of the system
+        :parameter s_final: the final position of the system
+        :parameter v_initial: the initial velocity of the system
+        :parameter v_final: the final velocity of the system
+        :parameter v_max: the maximum velocity that the system will experience both negative or
+                                    positive. This is the cruise velocity. This value should always be positive
+
+        :parameter acceleration_max: the maximum acceleration that the system will experience both negative or
+                                    positive. This value should always be positive
+        """
+        super().__init__()
+
+        self.jerk_max = jerk_max
+        self.s_initial = s_initial
+        self.s_final = s_final
+        self.v_initial, self.v_final = np.clip((v_initial, v_final), -v_max, v_max)
+        self.a_initial, self.a_final = np.clip((a_initial, a_final), -acceleration_max, acceleration_max)
+        self.acceleration_max = acceleration_max
+        self.delta_s = s_final - s_initial
+        self.v_max = v_max * np.sign(self.delta_s)
+
+    @staticmethod
+    def position(s, v, a, j, t):
+        return s + v * t + t ** 2 / 2 * a + t ** 3 / 6 * j
+
+    @staticmethod
+    def velocity(v, a, j, t):
+        return v + a * t + t ** 2 / 2 * j
+
+    @staticmethod
+    def acceleration(a, j, t):
+        return a + j * t
+
     def get_data(self) -> Dict[str, np.ndarray]:
         pass
 
@@ -223,12 +259,35 @@ if __name__ == '__main__':
     mid = 0.2
     t = TrapezoidalCurve(0, mid, 0, 0, 3, 1)
     d = t.get_data()
-    t = TrapezoidalCurve(mid, 0, 0, 0, 2, 1)
-    t1 = t.get_data()
-    d = np.concatenate((d, t1 + np.array([d[-1, 0], 0, 0, 0])))
-    t = TrapezoidalCurve(0, 1, 0, -2, 2, 1)
-    t1 = t.get_data()
-    d = np.concatenate((d, t1 + np.array([d[-1, 0], 0, 0, 0])))
+
+
+    def test(p, fun1):
+        def func():
+            for i in range(1000):
+                fun1(p)
+
+        return func
+
+
+    # ps = (0, 5, 10, 50, 100, 500, 1000, 5000, 10000)
+    # times = []
+
+    # for p in ps:
+    #     tr = Timer(test(p, t.get_data))
+    #     time = tr.timeit(100)
+    #     times.append(time)
+    #
+    #     print(p, time)
+    #
+    # plt.plot(ps, times)
+    # plt.show()
+
+    # t = TrapezoidalCurve(mid, 0, 0, 0, 2, 1)
+    # t1 = t.get_data()
+    # d = merge(d, t1)
+    # t = TrapezoidalCurve(0, 1, 0, -2, 2, 1)
+    # t1 = t.get_data()
+    # d = np.concatenate((d, t1 + np.array([d[-1, 0], 0, 0, 0])))
 
     fig: Figure = plt.gcf()
     p, v, a = fig.subplots(3, 1)
