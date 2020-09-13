@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
-from timeit import Timer
 from typing import Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 
@@ -19,6 +19,14 @@ class MotionProfile(ABC):
 
 class NthOrderSCurve:
     pass
+
+
+class SCurve(MotionProfile):
+    def get_data(self) -> Dict[str, np.ndarray]:
+        pass
+
+    def get_data_point(self, t) -> Dict[str, np.ndarray]:
+        pass
 
 
 class TrapezoidalCurve(MotionProfile):
