@@ -232,15 +232,21 @@ if __name__ == '__main__':
 
     fig: Figure = plt.gcf()
     p, v, a = fig.subplots(3, 1)
+    p: Axes
+    v: Axes
+    a: Axes
 
+    p.set_title("Position")
     p.grid(True)
     p.grid(True, 'minor', linewidth=.25)
     p.minorticks_on()
 
+    v.set_title("Velocity")
     v.grid(True)
     v.grid(True, 'minor', linewidth=.25)
     v.minorticks_on()
 
+    a.set_title("Acceleration")
     a.grid(True)
     a.grid(True, 'minor', linewidth=.25)
     a.minorticks_on()
